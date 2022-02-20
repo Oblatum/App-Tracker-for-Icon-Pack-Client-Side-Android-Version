@@ -12,6 +12,7 @@ import coil.load
 import com.drake.brv.utils.models
 import com.drake.brv.utils.mutable
 import com.drake.brv.utils.setup
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.zackratos.ultimatebarx.ultimatebarx.navigationBar
 import com.zackratos.ultimatebarx.ultimatebarx.statusBar
 import kotlinx.coroutines.flow.launchIn
@@ -65,6 +66,18 @@ class MainActivity : BaseActivity() {
                             data.isCheck = !data.isCheck
                             notifyItemChanged(adapterPosition)
                         }
+                        rootLayout.setOnLongClickListener {
+                            MaterialAlertDialogBuilder(this@MainActivity).setMessage(
+                                """
+                                App Name: ${data.appName}
+                                
+                                Package Name: ${data.packageName}
+                                
+                                Activity Name: ${data.activityName}
+                            """.trimIndent()
+                            ).show()
+                            true
+                        }
                     }
                 }
             }
@@ -85,7 +98,7 @@ class MainActivity : BaseActivity() {
                             dialog.dismiss()
                             Toast.makeText(this@MainActivity, "上传完成", Toast.LENGTH_SHORT).show()
                         }
-                        MainEvent.UploadFail ->{
+                        MainEvent.UploadFail -> {
                             dialog.dismiss()
                             Toast.makeText(this@MainActivity, "上传失败", Toast.LENGTH_SHORT).show()
                         }
@@ -131,12 +144,12 @@ class MainActivity : BaseActivity() {
             R.id.ic_select_un_all -> {
                 val oldList = binding.appList.mutable as MutableList<AppInfo>
                 oldList.mapInPlace {
-                        it.isCheck = false
-                        it
+                    it.isCheck = false
+                    it
                 }
                 binding.appList.models = oldList
             }
-            R.id.ic_select_revers ->{
+            R.id.ic_select_revers -> {
                 val oldList = binding.appList.mutable as MutableList<AppInfo>
                 oldList.mapInPlace {
                     if (it.isCheck) {

@@ -2,6 +2,7 @@ package ren.imyan.app_tracker.ui
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageInfo
 import androidx.core.graphics.drawable.toBitmap
@@ -57,7 +58,7 @@ class MainViewModel : BaseViewModel<MainData, MainEvent, MainAction>() {
                     appName = it.applicationInfo.loadLabel(get<Context>().packageManager)
                         .toString(),
                     packageName = it.packageName,
-                    activityName = it.packageName,
+                    activityName = activityName(it),
                     icon = it.applicationInfo.loadIcon(get<Context>().packageManager).toBitmap(),
                     isSystem = isSystemApp(it),
                 )
@@ -76,6 +77,21 @@ class MainViewModel : BaseViewModel<MainData, MainEvent, MainAction>() {
         return isSysApp || isSysUpd
     }
 
+    private fun activityName(pi: PackageInfo): String {
+        val resolveIntent = Intent(Intent.ACTION_MAIN,null).apply {
+            addCategory(Intent.CATEGORY_LAUNCHER)
+            setPackage(pi.packageName)
+        }
+        val resolveInfoList = get<Context>().packageManager.queryIntentActivities(resolveIntent,0)
+        kotlin.runCatching {
+            val resolveInfo = resolveInfoList.iterator().next()
+            resolveInfo?.let {
+                return it.activityInfo.name;
+            }
+        }
+        return ""
+    }
+
     private fun sendAppInfoList(infoList: List<AppInfo>) {
         infoList.asFlow().onEach {
             repo.upload(it).catch {
@@ -86,7 +102,7 @@ class MainViewModel : BaseViewModel<MainData, MainEvent, MainAction>() {
                 emitEvent {
                     MainEvent.UpdateProgress(currProgress++)
                 }
-                if(infoList.size == currProgress){
+                if (infoList.size == currProgress) {
                     emitEvent {
                         MainEvent.DismissDialog
                     }
