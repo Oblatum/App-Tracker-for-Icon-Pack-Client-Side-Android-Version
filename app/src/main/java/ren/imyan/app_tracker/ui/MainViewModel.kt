@@ -83,9 +83,10 @@ class MainViewModel : BaseViewModel<MainData, MainEvent, MainAction>() {
         val tempList = currAppList
         tempList?.let { list ->
             var newList = list.filter {
-                (it.appName ?: "").contains(type) || (it.packageName ?: "").contains(type)
+                (it.appName ?: "").contains(type, ignoreCase = true) || (it.packageName
+                    ?: "").contains(type, ignoreCase = true)
             }
-            if(newList.isEmpty()){
+            if (type.isEmpty()) {
                 newList = currAppList!!
             }
             emitData {

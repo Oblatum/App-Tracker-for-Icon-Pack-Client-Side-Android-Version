@@ -17,7 +17,7 @@ class AppTrackerRepo {
                 activityName = info.activityName,
                 appName = info.appName,
                 packageName = info.packageName,
-                signature = "test"
+                signature = "app-tracker"
             )
             emit(api.submitApp(appInfo))
         }.flowOn(Dispatchers.IO)

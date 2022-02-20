@@ -7,6 +7,7 @@ import android.view.MenuItem
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.core.content.ContextCompat
+import androidx.core.view.updatePadding
 import androidx.core.widget.doOnTextChanged
 import androidx.lifecycle.lifecycleScope
 import coil.load
@@ -15,6 +16,7 @@ import com.drake.brv.utils.mutable
 import com.drake.brv.utils.setup
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.zackratos.ultimatebarx.ultimatebarx.navigationBar
+import com.zackratos.ultimatebarx.ultimatebarx.navigationBarHeight
 import com.zackratos.ultimatebarx.ultimatebarx.statusBar
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -59,6 +61,10 @@ class MainActivity : BaseActivity() {
                     val data = mutable[modelPosition] as AppInfo
 
                     binding.apply {
+                        if(modelPosition == modelCount){
+                            rootLayout.updatePadding(bottom = navigationBarHeight)
+                        }
+
                         appName.text = data.appName
                         appIcon.load(data.icon)
 
