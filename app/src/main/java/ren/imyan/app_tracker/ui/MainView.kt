@@ -1,5 +1,6 @@
 package ren.imyan.app_tracker.ui
 
+import ren.imyan.app_tracker.FilterAppType
 import ren.imyan.app_tracker.base.BaseLoad
 import ren.imyan.app_tracker.base.UiAction
 import ren.imyan.app_tracker.base.UiData
@@ -18,4 +19,6 @@ sealed class MainEvent : UiEvent {
 
 sealed class MainAction : UiAction {
     data class Upload(val infoList: List<AppInfo>? = null) : MainAction()
+    data class FilterApp(val type: FilterAppType) : MainAction()
+    data class Search(val type: String) : MainAction()
 }

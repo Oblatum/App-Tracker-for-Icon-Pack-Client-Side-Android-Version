@@ -19,4 +19,19 @@
         android:icon="@drawable/ic_select_revers"
         app:showAsAction="ifRoom"
         android:title="反选" />
+
+    <item
+        android:id="@+id/only_user_app"
+        app:showAsAction="never"
+        android:title="只显示用户 APP"/>
+
+    <item
+        android:id="@+id/only_system_app"
+        app:showAsAction="never"
+        android:title="只显示系统 APP"/>
+
+    <item
+        android:id="@+id/all_app"
+        app:showAsAction="never"
+        android:title="显示所有"/>
 </menu>

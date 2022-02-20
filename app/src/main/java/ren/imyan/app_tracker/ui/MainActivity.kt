@@ -7,6 +7,7 @@ import android.view.MenuItem
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.core.content.ContextCompat
+import androidx.core.widget.doOnTextChanged
 import androidx.lifecycle.lifecycleScope
 import coil.load
 import com.drake.brv.utils.models
@@ -17,6 +18,7 @@ import com.zackratos.ultimatebarx.ultimatebarx.navigationBar
 import com.zackratos.ultimatebarx.ultimatebarx.statusBar
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import ren.imyan.app_tracker.FilterAppType
 import ren.imyan.app_tracker.R
 import ren.imyan.app_tracker.base.BaseActivity
 import ren.imyan.app_tracker.base.BaseLoad
@@ -81,6 +83,10 @@ class MainActivity : BaseActivity() {
                     }
                 }
             }
+            searchEdit.doOnTextChanged { text, _, _, _ ->
+                viewModel.dispatch(MainAction.Search(text.toString().trim()))
+            }
+
             send.setOnClickListener {
                 val checkedList = (appList.models as List<AppInfo>).filter { it.isCheck }
                 if (checkedList.isEmpty()) {
@@ -120,7 +126,7 @@ class MainActivity : BaseActivity() {
                 }
                 is BaseLoad.Success -> {
                     binding.appList.models =
-                        it.data.toMutableList().filter { data -> data.isSystem == false }
+                        it.data.toMutableList()
                 }
             }
         }
@@ -162,6 +168,9 @@ class MainActivity : BaseActivity() {
                 }
                 binding.appList.models = oldList
             }
+            R.id.only_user_app -> viewModel.dispatch(MainAction.FilterApp(FilterAppType.User))
+            R.id.only_system_app -> viewModel.dispatch(MainAction.FilterApp(FilterAppType.System))
+            R.id.all_app -> viewModel.dispatch(MainAction.FilterApp(FilterAppType.All))
         }
         return super.onOptionsItemSelected(item)
     }

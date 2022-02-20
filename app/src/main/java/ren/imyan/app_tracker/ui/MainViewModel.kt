@@ -11,7 +11,9 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import okhttp3.internal.filterList
 import ren.imyan.app_tracker.App
+import ren.imyan.app_tracker.FilterAppType
 import ren.imyan.app_tracker.base.BaseLoad
 import ren.imyan.app_tracker.base.BaseViewModel
 import ren.imyan.app_tracker.common.ktx.get
@@ -23,6 +25,8 @@ import ren.imyan.app_tracker.net.AppTrackerRepo
 class MainViewModel : BaseViewModel<MainData, MainEvent, MainAction>() {
 
     private var currProgress = 0
+    private var allAppList: MutableList<AppInfo>? = null
+    private var currAppList: MutableList<AppInfo>? = null
 
     init {
         viewModelScope.launch {
@@ -40,6 +44,8 @@ class MainViewModel : BaseViewModel<MainData, MainEvent, MainAction>() {
                 currProgress = 0
                 action.infoList?.let { sendAppInfoList(it) }
             }
+            is MainAction.FilterApp -> filterList(action.type)
+            is MainAction.Search -> search(action.type)
         }
     }
 
@@ -64,11 +70,31 @@ class MainViewModel : BaseViewModel<MainData, MainEvent, MainAction>() {
                 )
             )
         }
+        allAppList = appInfoList.filter { it.activityName != "" }.toMutableList()
+        currAppList = appInfoList.filter { it.activityName != "" }.toMutableList()
         emitData {
             copy(
-                appInfoList = BaseLoad.Success(appInfoList)
+                appInfoList = BaseLoad.Success(appInfoList.filter { it.activityName != "" })
             )
         }
+    }
+
+    private fun search(type: String) {
+        val tempList = currAppList
+        tempList?.let { list ->
+            var newList = list.filter {
+                (it.appName ?: "").contains(type) || (it.packageName ?: "").contains(type)
+            }
+            if(newList.isEmpty()){
+                newList = currAppList!!
+            }
+            emitData {
+                copy(
+                    appInfoList = BaseLoad.Success(newList.toMutableList())
+                )
+            }
+        }
+
     }
 
     private fun isSystemApp(pi: PackageInfo): Boolean {
@@ -78,11 +104,11 @@ class MainViewModel : BaseViewModel<MainData, MainEvent, MainAction>() {
     }
 
     private fun activityName(pi: PackageInfo): String {
-        val resolveIntent = Intent(Intent.ACTION_MAIN,null).apply {
+        val resolveIntent = Intent(Intent.ACTION_MAIN, null).apply {
             addCategory(Intent.CATEGORY_LAUNCHER)
             setPackage(pi.packageName)
         }
-        val resolveInfoList = get<Context>().packageManager.queryIntentActivities(resolveIntent,0)
+        val resolveInfoList = get<Context>().packageManager.queryIntentActivities(resolveIntent, 0)
         kotlin.runCatching {
             val resolveInfo = resolveInfoList.iterator().next()
             resolveInfo?.let {
@@ -90,6 +116,43 @@ class MainViewModel : BaseViewModel<MainData, MainEvent, MainAction>() {
             }
         }
         return ""
+    }
+
+    private fun filterList(type: FilterAppType) {
+        when (type) {
+            FilterAppType.User -> {
+                allAppList?.let {
+                    val newList = it.filter { data -> data.isSystem == false }
+                    currAppList = newList.toMutableList()
+                    emitData {
+                        copy(
+                            appInfoList = BaseLoad.Success(newList.toMutableList())
+                        )
+                    }
+                }
+            }
+            FilterAppType.System -> {
+                allAppList?.let {
+                    val newList = it.filter { data -> data.isSystem == true }
+                    currAppList = newList.toMutableList()
+                    emitData {
+                        copy(
+                            appInfoList = BaseLoad.Success(newList.toMutableList())
+                        )
+                    }
+                }
+            }
+            FilterAppType.All -> {
+                allAppList?.let {
+                    currAppList = it.toMutableList()
+                    emitData {
+                        copy(
+                            appInfoList = BaseLoad.Success(it.toMutableList())
+                        )
+                    }
+                }
+            }
+        }
     }
 
     private fun sendAppInfoList(infoList: List<AppInfo>) {

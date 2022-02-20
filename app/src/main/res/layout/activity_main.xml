@@ -26,12 +26,21 @@
         app:tint="?attr/colorOnPrimarySurface"
         tools:ignore="ContentDescription" />
 
+    <EditText
+        android:id="@+id/search_edit"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:hint="输入应用名或包名"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
+        android:inputType="text" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/app_list"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        app:layout_constraintTop_toBottomOf="@id/toolbar"
+        app:layout_constraintTop_toBottomOf="@id/search_edit"
         tools:listitem="@layout/item_app" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
