@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/select_all"
+        android:icon="@drawable/ic_select_all"
+        app:showAsAction="ifRoom"
+        android:title="全选" />
+
+    <item
+        android:id="@+id/ic_select_un_all"
+        android:icon="@drawable/ic_select_un_all"
+        app:showAsAction="ifRoom"
+        android:title="取消选择" />
+
+    <item
+        android:id="@+id/ic_select_revers"
+        android:icon="@drawable/ic_select_revers"
+        app:showAsAction="ifRoom"
+        android:title="反选" />
+</menu>

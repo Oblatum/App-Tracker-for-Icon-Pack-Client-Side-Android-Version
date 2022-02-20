@@ -1,5 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="DesignSurface">
+    <option name="filePathToZoomLevelMap">
+      <map>
+        <entry key="..\:/Users/nihaocun/Project/Android/AppTracker/app/src/main/res/drawable/ic_select_revers.xml" value="0.184" />
+        <entry key="..\:/Users/nihaocun/Project/Android/AppTracker/app/src/main/res/drawable/ic_select_un_all.xml" value="0.184" />
+        <entry key="..\:/Users/nihaocun/Project/Android/AppTracker/app/src/main/res/layout/activity_main.xml" value="0.16666666666666666" />
+        <entry key="..\:/Users/nihaocun/Project/Android/AppTracker/app/src/main/res/layout/dialog_upload.xml" value="0.3" />
+        <entry key="..\:/Users/nihaocun/Project/Android/AppTracker/app/src/main/res/layout/item_app.xml" value="0.3" />
+        <entry key="..\:/Users/nihaocun/Project/Android/AppTracker/app/src/main/res/menu/toolbar.xml" value="0.2953846153846154" />
+      </map>
+    </option>
+  </component>
   <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="Android Studio default JDK" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/build/classes" />
   </component>
