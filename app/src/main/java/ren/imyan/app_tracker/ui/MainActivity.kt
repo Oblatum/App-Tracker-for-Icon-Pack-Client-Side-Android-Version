@@ -1,12 +1,10 @@
 package ren.imyan.app_tracker.ui
 
-import android.content.res.ColorStateList
 import android.graphics.Color
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
 import androidx.activity.viewModels
-import androidx.core.content.ContextCompat
 import androidx.core.view.updatePadding
 import androidx.core.widget.doOnTextChanged
 import androidx.lifecycle.lifecycleScope
@@ -94,6 +92,7 @@ class MainActivity : BaseActivity() {
             }
 
             send.setOnClickListener {
+                @Suppress("UNCHECKED_CAST")
                 val checkedList = (appList.models as List<AppInfo>).filter { it.isCheck }
                 if (checkedList.isEmpty()) {
                     return@setOnClickListener
@@ -134,6 +133,7 @@ class MainActivity : BaseActivity() {
                     binding.appList.models =
                         it.data.toMutableList()
                 }
+                else -> {}
             }
         }
     }
@@ -143,6 +143,7 @@ class MainActivity : BaseActivity() {
         return true
     }
 
+    @Suppress("UNCHECKED_CAST")
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.select_all -> {

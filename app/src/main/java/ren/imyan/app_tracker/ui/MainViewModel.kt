@@ -5,18 +5,17 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageInfo
-import androidx.core.graphics.drawable.toBitmap
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.async
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import okhttp3.internal.filterList
-import ren.imyan.app_tracker.App
 import ren.imyan.app_tracker.FilterAppType
 import ren.imyan.app_tracker.base.BaseLoad
 import ren.imyan.app_tracker.base.BaseViewModel
 import ren.imyan.app_tracker.common.ktx.get
+import ren.imyan.app_tracker.common.ktx.getOriginalIcon
 import ren.imyan.app_tracker.common.ktx.inject
 import ren.imyan.app_tracker.model.AppInfo
 import ren.imyan.app_tracker.net.AppTrackerRepo
@@ -65,7 +64,7 @@ class MainViewModel : BaseViewModel<MainData, MainEvent, MainAction>() {
                         .toString(),
                     packageName = it.packageName,
                     activityName = activityName(it),
-                    icon = it.applicationInfo.loadIcon(get<Context>().packageManager).toBitmap(),
+                    icon = it.getOriginalIcon(),
                     isSystem = isSystemApp(it),
                 )
             )
@@ -113,7 +112,7 @@ class MainViewModel : BaseViewModel<MainData, MainEvent, MainAction>() {
         kotlin.runCatching {
             val resolveInfo = resolveInfoList.iterator().next()
             resolveInfo?.let {
-                return it.activityInfo.name;
+                return it.activityInfo.name
             }
         }
         return ""
