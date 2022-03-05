@@ -7,6 +7,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
 import androidx.activity.viewModels
+import androidx.core.view.isGone
 import androidx.core.view.updatePadding
 import androidx.core.widget.doOnTextChanged
 import androidx.lifecycle.lifecycleScope
@@ -153,6 +154,7 @@ class MainActivity : BaseActivity() {
 
                 }
                 is BaseLoad.Success -> {
+                    binding.progress.isGone = true
                     binding.appList.models =
                         it.data.toMutableList()
                 }
