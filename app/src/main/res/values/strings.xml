@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">App-Tracker</string>
+    <string name="app_name">App Tracker</string>
+    <string name="github"><a href="https://github.com/Oblatum/App-Tracker-for-Icon-Pack-Client-Side-Android-Version">GitHub Repo</a></string>
 </resources>

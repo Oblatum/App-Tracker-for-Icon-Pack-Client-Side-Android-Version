@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.Window
+import androidx.core.view.isGone
 import androidx.fragment.app.DialogFragment
 import ren.imyan.app_tracker.databinding.DialogUploadBinding
 
@@ -38,5 +39,21 @@ class UploadDialog : DialogFragment() {
     @SuppressLint("SetTextI18n")
     fun updateProgress(progress: Int) {
         binding?.progressText?.text = "当前已上传 $progress/$total 个"
+    }
+
+    @SuppressLint("SetTextI18n")
+    fun showTitle(){
+        binding?.title?.apply {
+            isGone = false
+            text = "正在上传 APP 信息"
+        }
+    }
+
+    @SuppressLint("SetTextI18n")
+    fun switchTitle(){
+        binding?.title?.apply {
+            isGone = false
+            text = "正在上传 APP 图标"
+        }
     }
 }

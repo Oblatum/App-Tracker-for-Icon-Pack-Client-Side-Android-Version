@@ -6,6 +6,18 @@
     android:layout_height="wrap_content"
     android:paddingHorizontal="50dp">
 
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:text="正在上传 APP 信息" />
+
     <ProgressBar
         android:id="@+id/progress_circular"
         android:layout_width="wrap_content"

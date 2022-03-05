@@ -17,7 +17,7 @@ val netModule = module {
     single {
         Retrofit.Builder()
             .client(get())
-            .baseUrl("https://bot.k2t3k.tk/api/")
+            .baseUrl("https://test.k2t3k.tk/api/")
             .addConverterFactory(MoshiConverterFactory.create())
             .build()
     }

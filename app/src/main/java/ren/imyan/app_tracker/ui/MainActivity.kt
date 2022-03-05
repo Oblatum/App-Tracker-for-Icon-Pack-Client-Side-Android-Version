@@ -1,5 +1,7 @@
 package ren.imyan.app_tracker.ui
 
+import android.content.Intent
+import android.graphics.Bitmap
 import android.graphics.Color
 import android.view.Menu
 import android.view.MenuItem
@@ -92,29 +94,50 @@ class MainActivity : BaseActivity() {
             }
 
             send.setOnClickListener {
-                @Suppress("UNCHECKED_CAST")
-                val checkedList = (appList.models as List<AppInfo>).filter { it.isCheck }
-                if (checkedList.isEmpty()) {
-                    return@setOnClickListener
-                }
+                val selectItems = arrayOf(
+                    "只上传 APP 信息",
+                    "只上传 APP 图标",
+                    "都上传"
+                )
 
-                dialog.show(supportFragmentManager, "upload")
-                dialog.setTotal(checkedList.size)
-
-                viewModel.dispatch(MainAction.Upload(checkedList))
-                viewModel.uiEvent.onEach {
-                    when (it) {
-                        is MainEvent.UpdateProgress -> dialog.updateProgress(it.progress)
-                        MainEvent.DismissDialog -> {
-                            dialog.dismiss()
-                            Toast.makeText(this@MainActivity, "上传完成", Toast.LENGTH_SHORT).show()
+                val selectDialog = MaterialAlertDialogBuilder(this@MainActivity).apply {
+                    setItems(selectItems){_,index ->
+                        @Suppress("UNCHECKED_CAST")
+                        val checkedList = (binding.appList.models as List<AppInfo>).filter { it.isCheck }
+                        if (checkedList.isEmpty()) {
+                            return@setItems
                         }
-                        MainEvent.UploadFail -> {
-                            dialog.dismiss()
-                            Toast.makeText(this@MainActivity, "上传失败", Toast.LENGTH_SHORT).show()
+
+                        dialog.show(supportFragmentManager, "upload")
+                        dialog.setTotal(checkedList.size)
+
+                        when(index){
+                            0 -> {
+                                viewModel.dispatch(MainAction.SubmitAppInfo(checkedList))
+                            }
+                            1 -> {
+                                val appIconMap = mutableMapOf<String, Bitmap>()
+                                checkedList.forEach {
+                                    if(it.packageName != null && it.icon != null) {
+                                        appIconMap[it.packageName] = it.icon
+                                    }
+                                }
+                                viewModel.dispatch(MainAction.SubmitAppIcon(appIconMap))
+                            }
+                            2-> {
+                                dialog.showTitle()
+                                val appIconMap = mutableMapOf<String, Bitmap>()
+                                checkedList.forEach {
+                                    if(it.packageName != null && it.icon != null) {
+                                        appIconMap[it.packageName] = it.icon
+                                    }
+                                }
+                                viewModel.dispatch(MainAction.SubmitAll(checkedList,appIconMap))
+                            }
                         }
                     }
-                }.launchIn(this@MainActivity.lifecycleScope)
+                }
+                selectDialog.show()
             }
         }
     }
@@ -136,6 +159,20 @@ class MainActivity : BaseActivity() {
                 else -> {}
             }
         }
+        viewModel.uiEvent.onEach {
+            when (it) {
+                is MainEvent.UpdateProgress -> dialog.updateProgress(it.progress)
+                MainEvent.DismissDialog -> {
+                    dialog.dismiss()
+                    Toast.makeText(this@MainActivity, "上传完成", Toast.LENGTH_SHORT).show()
+                }
+                MainEvent.UploadFail -> {
+                    dialog.dismiss()
+                    Toast.makeText(this@MainActivity, "上传失败", Toast.LENGTH_SHORT).show()
+                }
+                MainEvent.SwitchTitle -> dialog.switchTitle()
+            }
+        }.launchIn(this@MainActivity.lifecycleScope)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -178,6 +215,7 @@ class MainActivity : BaseActivity() {
             R.id.only_user_app -> viewModel.dispatch(MainAction.FilterApp(FilterAppType.User))
             R.id.only_system_app -> viewModel.dispatch(MainAction.FilterApp(FilterAppType.System))
             R.id.all_app -> viewModel.dispatch(MainAction.FilterApp(FilterAppType.All))
+            R.id.about -> startActivity(Intent(this,AboutActivity::class.java))
         }
         return super.onOptionsItemSelected(item)
     }
