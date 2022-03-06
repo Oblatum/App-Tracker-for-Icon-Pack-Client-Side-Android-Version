@@ -17,10 +17,7 @@ import kotlinx.coroutines.launch
 import ren.imyan.app_tracker.FilterAppType
 import ren.imyan.app_tracker.base.BaseLoad
 import ren.imyan.app_tracker.base.BaseViewModel
-import ren.imyan.app_tracker.common.ktx.get
-import ren.imyan.app_tracker.common.ktx.getOriginalIcon
-import ren.imyan.app_tracker.common.ktx.inject
-import ren.imyan.app_tracker.common.ktx.toFile
+import ren.imyan.app_tracker.common.ktx.*
 import ren.imyan.app_tracker.model.AppInfo
 import ren.imyan.app_tracker.net.AppTrackerRepo
 import java.io.ByteArrayOutputStream
@@ -195,7 +192,7 @@ class MainViewModel : BaseViewModel<MainData, MainEvent, MainAction>() {
         iconList.toList().asFlow().catch { err ->
             err.printStackTrace()
         }.onEach {
-            val iconFile = it.second.toFile("${it.first}.jpg")
+            val iconFile = it.second.setBackground().toSize(192f, 192f).toFile("${it.first}.jpg")
             if (iconFile != null) {
                 repo.submitAppIcon(it.first, iconFile).catch { err ->
                     err.printStackTrace()
@@ -234,8 +231,8 @@ class MainViewModel : BaseViewModel<MainData, MainEvent, MainAction>() {
                     }
                     iconList.toList().asFlow().catch { err ->
                         err.printStackTrace()
-                    }.onEach { icons->
-                        val iconFile = icons.second.toFile("${icons.first}.jpg")
+                    }.onEach { icons ->
+                        val iconFile = icons.second.setBackground().toSize(192f, 192f).toFile("${icons.first}.jpg")
                         if (iconFile != null) {
                             repo.submitAppIcon(icons.first, iconFile).catch { err ->
                                 err.printStackTrace()
