@@ -39,14 +39,18 @@ fun Bitmap.toSize(width: Float, height: Float): Bitmap {
     return Bitmap.createBitmap(this, 0, 0, oldWidth, oldHeight, matrix, true)
 }
 
-fun Bitmap.toFile(fileName: String): File? {
+fun Bitmap.toFile(
+    fileName: String,
+    path: String = get<Context>().cacheDir.path,
+    format: Bitmap.CompressFormat = Bitmap.CompressFormat.JPEG
+): File? {
     var file: File? = null
     return try {
-        file = File(get<Context>().cacheDir.path + File.separator + fileName)
+        file = File(path + File.separator + fileName)
         file.createNewFile()
 
         ByteArrayOutputStream().use {
-            this.compress(Bitmap.CompressFormat.JPEG, 80, it)
+            this.compress(format, 80, it)
             val bitmapData = it.toByteArray()
             FileOutputStream(file).use { fos ->
                 fos.write(bitmapData)

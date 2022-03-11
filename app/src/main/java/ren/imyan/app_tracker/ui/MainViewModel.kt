@@ -1,28 +1,28 @@
 package ren.imyan.app_tracker.ui
 
+import ando.file.core.*
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageInfo
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.os.Environment
+import android.widget.Toast
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import org.threeten.bp.LocalDateTime
 import ren.imyan.app_tracker.FilterAppType
 import ren.imyan.app_tracker.base.BaseLoad
 import ren.imyan.app_tracker.base.BaseViewModel
 import ren.imyan.app_tracker.common.ktx.*
+import ren.imyan.app_tracker.common.utils.ZipUtil
 import ren.imyan.app_tracker.model.AppInfo
 import ren.imyan.app_tracker.net.AppTrackerRepo
-import java.io.ByteArrayOutputStream
 import java.io.File
-import java.io.FileOutputStream
 
 
 class MainViewModel : BaseViewModel<MainData, MainEvent, MainAction>() {
@@ -59,6 +59,8 @@ class MainViewModel : BaseViewModel<MainData, MainEvent, MainAction>() {
                     submitAll(action.infoList, action.iconMap)
                 }
             }
+            is MainAction.SaveIcon -> saveIcon(action.icon, action.appName)
+            is MainAction.ShareZip -> action.infoList?.let { shareZip(it) }
         }
     }
 
@@ -232,7 +234,8 @@ class MainViewModel : BaseViewModel<MainData, MainEvent, MainAction>() {
                     iconList.toList().asFlow().catch { err ->
                         err.printStackTrace()
                     }.onEach { icons ->
-                        val iconFile = icons.second.setBackground().toSize(192f, 192f).toFile("${icons.first}.jpg")
+                        val iconFile = icons.second.setBackground().toSize(192f, 192f)
+                            .toFile("${icons.first}.jpg")
                         if (iconFile != null) {
                             repo.submitAppIcon(icons.first, iconFile).catch { err ->
                                 err.printStackTrace()
@@ -253,6 +256,74 @@ class MainViewModel : BaseViewModel<MainData, MainEvent, MainAction>() {
                     }.launchIn(viewModelScope)
                 }
             }.launchIn(viewModelScope)
+        }.launchIn(viewModelScope)
+    }
+
+    private fun saveIcon(icon: Bitmap?, appName: String?) {
+        viewModelScope.launch {
+            flow {
+                emit(icon?.toFile("${appName}.jpg"))
+            }.flowOn(Dispatchers.IO).collect {
+                val contentValue = MediaStoreUtils.createContentValues(
+                    displayName = "${appName}.jpg",
+                    mimeType = "image/jpeg",
+                    relativePath = "${Environment.DIRECTORY_PICTURES}/app-track"
+                )
+                MediaStoreUtils.insertBitmap(BitmapFactory.decodeFile(it?.path), contentValue)
+                Toast.makeText(get(), "保存图标成功", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun shareZip(infoList: List<AppInfo>) {
+        val time = LocalDateTime.now()
+        infoList.asFlow().flowOn(Dispatchers.IO).onStart {
+            val stringBuilder = StringBuilder().apply {
+                append("<resources>")
+                infoList.forEach {
+                    append("\n")
+                    append("<!-- ${it.appName} -->\n")
+                    append("<item component=\"ComponentInfo{${it.packageName}/${it.activityName}}\" drawable=\"${it.appName}\"/>\n")
+                    append("\n")
+                }
+                append("</resources>")
+            }
+            val appFilterFile = FileUtils.createFile(
+                "${get<Context>().cacheDir.path}/${time}",
+                "appfilter.xml"
+            )
+            if (appFilterFile != null) {
+                FileUtils.writeBytes2File(
+                    stringBuilder.toString().toByteArray(), appFilterFile
+                )
+            }
+        }.onEach {
+            it.icon?.toFile(
+                "${it.appName!!}.png",
+                "${get<Context>().cacheDir.path}/${time}",
+                Bitmap.CompressFormat.PNG
+            )
+        }.onCompletion {
+            ZipUtil.zipByFolder(
+                "${get<Context>().cacheDir.path}/${time}",
+                "${get<Context>().cacheDir.path}/ICON_${time}.zip"
+            )
+
+            val uri = FileUri.getUriByFile(File("${get<Context>().cacheDir.path}/ICON_${time}.zip"))
+
+            MediaStoreUtils.insertMediaFile(
+                uri,
+                get(),
+                "application/zip",
+                "ICON_${time}.zip",
+                "",
+                "ICON_${time}.zip",
+                "AppTrack",
+                Environment.DIRECTORY_DOCUMENTS
+            )
+
+            FileUri.getUriByFile(File("${get<Context>().cacheDir.path}/ICON_${time}.zip"))
+                ?.let { it1 -> FileOpener.openShare(get(), it1, "") }
         }.launchIn(viewModelScope)
     }
 }

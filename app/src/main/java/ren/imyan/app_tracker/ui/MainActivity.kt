@@ -1,5 +1,10 @@
 package ren.imyan.app_tracker.ui
 
+import ando.file.core.FileOpener
+import ando.file.core.FileOperator
+import ando.file.core.FileUtils
+import android.content.ClipData
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Color
@@ -25,12 +30,11 @@ import ren.imyan.app_tracker.FilterAppType
 import ren.imyan.app_tracker.R
 import ren.imyan.app_tracker.base.BaseActivity
 import ren.imyan.app_tracker.base.BaseLoad
-import ren.imyan.app_tracker.common.ktx.binding
-import ren.imyan.app_tracker.common.ktx.mapInPlace
-import ren.imyan.app_tracker.common.ktx.observeState
+import ren.imyan.app_tracker.common.ktx.*
 import ren.imyan.app_tracker.databinding.ActivityMainBinding
 import ren.imyan.app_tracker.databinding.ItemAppBinding
 import ren.imyan.app_tracker.model.AppInfo
+
 
 class MainActivity : BaseActivity() {
 
@@ -62,7 +66,7 @@ class MainActivity : BaseActivity() {
                     val data = mutable[modelPosition] as AppInfo
 
                     binding.apply {
-                        if(modelPosition == modelCount){
+                        if (modelPosition == modelCount) {
                             rootLayout.updatePadding(bottom = navigationBarHeight)
                         }
 
@@ -76,15 +80,36 @@ class MainActivity : BaseActivity() {
                             notifyItemChanged(adapterPosition)
                         }
                         rootLayout.setOnLongClickListener {
-                            MaterialAlertDialogBuilder(this@MainActivity).setMessage(
-                                """
-                                App Name: ${data.appName}
-                                
-                                Package Name: ${data.packageName}
-                                
-                                Activity Name: ${data.activityName}
-                            """.trimIndent()
-                            ).show()
+                            val selectItems = arrayOf(
+                                "保存图标到相册",
+                                "复制 APP 名称和包名",
+                                "复制 APP 名称、包名和启动项",
+                            )
+                            MaterialAlertDialogBuilder(this@MainActivity).apply {
+                                setItems(selectItems) { _, index ->
+                                    when (index) {
+                                        0 -> {
+                                            viewModel.dispatch(
+                                                MainAction.SaveIcon(
+                                                    data.icon,
+                                                    data.appName
+                                                )
+                                            )
+                                        }
+                                        1 -> {
+                                            """
+应用名：${data.appName}
+包名：${data.packageName}
+                                           """.trimIndent().copy()
+                                        }
+                                        2 -> {
+                                            """
+<item component="ComponentInfo{${data.packageName}/${data.activityName}}" drawable="${data.appName}"/>
+                                            """.trimIndent().copy()
+                                        }
+                                    }
+                                }
+                            }.show()
                             true
                         }
                     }
@@ -96,44 +121,70 @@ class MainActivity : BaseActivity() {
 
             send.setOnClickListener {
                 val selectItems = arrayOf(
-                    "只上传 APP 信息",
-                    "只上传 APP 图标",
-                    "都上传"
+                    "只上传 APP 信息到服务器",
+                    "只上传 APP 图标到服务器",
+                    "都上传到服务器",
+                    "复制 APP 名称和包名到剪切板",
+                    "导出信息为 ZIP 文件"
                 )
 
                 val selectDialog = MaterialAlertDialogBuilder(this@MainActivity).apply {
-                    setItems(selectItems){_,index ->
+                    setItems(selectItems) { _, index ->
                         @Suppress("UNCHECKED_CAST")
-                        val checkedList = (binding.appList.models as List<AppInfo>).filter { it.isCheck }
+                        val checkedList =
+                            (binding.appList.models as List<AppInfo>).filter { it.isCheck }
                         if (checkedList.isEmpty()) {
                             return@setItems
                         }
 
-                        dialog.show(supportFragmentManager, "upload")
-                        dialog.setTotal(checkedList.size)
+                        if (index in 0..2) {
+                            dialog.show(supportFragmentManager, "upload")
+                            dialog.setTotal(checkedList.size)
+                        }
 
-                        when(index){
+                        when (index) {
                             0 -> {
+                                // 只上传 APP 信息到服务器
                                 viewModel.dispatch(MainAction.SubmitAppInfo(checkedList))
                             }
                             1 -> {
+                                // 只上传 APP 图标到服务器
                                 val appIconMap = mutableMapOf<String, Bitmap>()
                                 checkedList.forEach {
-                                    if(it.packageName != null && it.icon != null) {
+                                    if (it.packageName != null && it.icon != null) {
                                         appIconMap[it.packageName] = it.icon
                                     }
                                 }
                                 viewModel.dispatch(MainAction.SubmitAppIcon(appIconMap))
                             }
-                            2-> {
+                            2 -> {
+                                // 都上传到服务器
                                 dialog.showTitle()
                                 val appIconMap = mutableMapOf<String, Bitmap>()
                                 checkedList.forEach {
-                                    if(it.packageName != null && it.icon != null) {
+                                    if (it.packageName != null && it.icon != null) {
                                         appIconMap[it.packageName] = it.icon
                                     }
                                 }
-                                viewModel.dispatch(MainAction.SubmitAll(checkedList,appIconMap))
+                                viewModel.dispatch(MainAction.SubmitAll(checkedList, appIconMap))
+                            }
+                            3 -> {
+                                // 复制 APP 名称和包名到剪切板
+                                val stringBuilder = StringBuilder().apply {
+                                    append("<resources>")
+                                    checkedList.forEach {
+                                        append("\n")
+                                        append("<!-- ${it.appName} -->\n")
+                                        append("<item component=\"ComponentInfo{${it.packageName}/${it.activityName}}\" drawable=\"${it.appName}\"/>\n")
+                                        append("\n")
+                                    }
+                                    append("</resources>")
+                                }
+                                stringBuilder.toString().copy()
+                            }
+                            4 -> {
+                                // 导出信息为 ZIP 文件
+                                viewModel.dispatch(MainAction.ShareZip(checkedList))
                             }
                         }
                     }
@@ -142,6 +193,7 @@ class MainActivity : BaseActivity() {
             }
         }
     }
+
 
     override fun initViewModel() {
         super.initViewModel()
@@ -217,7 +269,7 @@ class MainActivity : BaseActivity() {
             R.id.only_user_app -> viewModel.dispatch(MainAction.FilterApp(FilterAppType.User))
             R.id.only_system_app -> viewModel.dispatch(MainAction.FilterApp(FilterAppType.System))
             R.id.all_app -> viewModel.dispatch(MainAction.FilterApp(FilterAppType.All))
-            R.id.about -> startActivity(Intent(this,AboutActivity::class.java))
+            R.id.about -> startActivity(Intent(this, AboutActivity::class.java))
         }
         return super.onOptionsItemSelected(item)
     }

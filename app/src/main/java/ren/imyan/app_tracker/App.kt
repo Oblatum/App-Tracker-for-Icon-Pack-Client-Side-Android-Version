@@ -1,7 +1,9 @@
 package ren.imyan.app_tracker
 
+import ando.file.core.FileOperator
 import android.app.Application
-import com.drake.brv.utils.BRV
+import com.jakewharton.threetenabp.AndroidThreeTen
+
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.startKoin
@@ -19,6 +21,8 @@ class App:Application() {
         Timber.plant(Timber.DebugTree())
         // 初始化BindingAdapter的默认绑定ID, 如果不使用DataBinding并不需要初始化
 //        BRV.modelId = BR.m
+        FileOperator.init(this,BuildConfig.DEBUG)
+        AndroidThreeTen.init(this);
         initKoin()
     }
 
