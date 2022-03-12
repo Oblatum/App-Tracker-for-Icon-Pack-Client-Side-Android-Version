@@ -32,6 +32,7 @@ import ren.imyan.app_tracker.base.BaseActivity
 import ren.imyan.app_tracker.base.BaseLoad
 import ren.imyan.app_tracker.common.ktx.*
 import ren.imyan.app_tracker.databinding.ActivityMainBinding
+import ren.imyan.app_tracker.databinding.DialogSubmitBinding
 import ren.imyan.app_tracker.databinding.ItemAppBinding
 import ren.imyan.app_tracker.model.AppInfo
 
@@ -123,14 +124,14 @@ class MainActivity : BaseActivity() {
 
             send.setOnClickListener {
                 val selectItems = arrayOf(
-                    "分享 ZIP 文件（推荐使用！）",
                     "复制 APP 名称和包名到剪切板",
                     "只上传 APP 信息到服务器",
                     "只上传 APP 图标到服务器",
-                    "都上传到服务器",
                 )
+                val submitDialogBinding = DialogSubmitBinding.inflate(this@MainActivity.layoutInflater)
 
                 val selectDialog = MaterialAlertDialogBuilder(this@MainActivity).apply {
+                    setView(submitDialogBinding.root)
                     setItems(selectItems) { _, index ->
                         @Suppress("UNCHECKED_CAST")
                         val checkedList =
@@ -139,17 +140,13 @@ class MainActivity : BaseActivity() {
                             return@setItems
                         }
 
-                        if (index in 2..4) {
+                        if (index in 1..2) {
                             dialog.show(supportFragmentManager, "upload")
                             dialog.setTotal(checkedList.size)
                         }
 
                         when (index) {
                             0 -> {
-                                // 导出信息为 ZIP 文件
-                                viewModel.dispatch(MainAction.ShareZip(checkedList))
-                            }
-                            1 -> {
                                 // 复制 APP 名称和包名到剪切板
                                 val stringBuilder = StringBuilder().apply {
                                     append("<resources>")
@@ -163,11 +160,11 @@ class MainActivity : BaseActivity() {
                                 }
                                 stringBuilder.toString().copy()
                             }
-                            2 -> {
+                            1 -> {
                                 // 只上传 APP 信息到服务器
                                 viewModel.dispatch(MainAction.SubmitAppInfo(checkedList))
                             }
-                            3 -> {
+                            2 -> {
                                 // 只上传 APP 图标到服务器
                                 val appIconMap = mutableMapOf<String, Bitmap>()
                                 checkedList.forEach {
@@ -177,18 +174,41 @@ class MainActivity : BaseActivity() {
                                 }
                                 viewModel.dispatch(MainAction.SubmitAppIcon(appIconMap))
                             }
-                            4 -> {
-                                // 都上传到服务器
-                                dialog.showTitle()
-                                val appIconMap = mutableMapOf<String, Bitmap>()
-                                checkedList.forEach {
-                                    if (it.packageName != null && it.icon != null) {
-                                        appIconMap[it.packageName] = it.icon
-                                    }
-                                }
-                                viewModel.dispatch(MainAction.SubmitAll(checkedList, appIconMap))
+                        }
+                    }
+                }.create()
+
+                submitDialogBinding.apply {
+                    shareZip.setOnClickListener {
+                        @Suppress("UNCHECKED_CAST")
+                        val checkedList =
+                            (binding.appList.models as List<AppInfo>).filter { it.isCheck }
+                        if (checkedList.isEmpty()) {
+                            return@setOnClickListener
+                        }
+                        // 导出信息为 ZIP 文件
+                        viewModel.dispatch(MainAction.ShareZip(checkedList))
+                        selectDialog.dismiss()
+                    }
+                    submitAll.setOnClickListener {
+                        @Suppress("UNCHECKED_CAST")
+                        val checkedList =
+                            (binding.appList.models as List<AppInfo>).filter { it.isCheck }
+                        if (checkedList.isEmpty()) {
+                            return@setOnClickListener
+                        }
+                        dialog.show(supportFragmentManager, "upload")
+                        dialog.setTotal(checkedList.size)
+                        // 都上传到服务器
+                        dialog.showTitle()
+                        val appIconMap = mutableMapOf<String, Bitmap>()
+                        checkedList.forEach {
+                            if (it.packageName != null && it.icon != null) {
+                                appIconMap[it.packageName] = it.icon
                             }
                         }
+                        viewModel.dispatch(MainAction.SubmitAll(checkedList, appIconMap))
+                        selectDialog.dismiss()
                     }
                 }
                 selectDialog.show()

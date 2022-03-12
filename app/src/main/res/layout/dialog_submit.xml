@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_horizontal"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="推荐使用⬇️" />
+
+
+    <Button
+        android:id="@+id/share_zip"
+        style="?android:attr/buttonBarButtonStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:layout_weight="1"
+        android:drawableLeft="@android:drawable/ic_menu_share"
+        android:text="分享 ZIP 文件给设计师"
+        tools:ignore="RtlHardcoded" />
+
+    <Button
+        android:id="@+id/submit_all"
+        style="?android:attr/buttonBarButtonStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:layout_weight="1"
+        android:drawableLeft="@android:drawable/ic_menu_upload"
+        android:text="上传所有信息到服务器"
+        tools:ignore="RtlHardcoded"/>
+
+</LinearLayout>
