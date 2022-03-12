@@ -49,6 +49,8 @@ class MainActivity : BaseActivity() {
 
     override fun initView() {
         super.initView()
+        FileUtils.deleteFile(get<Context>().cacheDir.path)
+
         statusBar {
             color = Color.WHITE
             light = true
@@ -121,11 +123,11 @@ class MainActivity : BaseActivity() {
 
             send.setOnClickListener {
                 val selectItems = arrayOf(
+                    "分享 ZIP 文件（推荐使用！）",
+                    "复制 APP 名称和包名到剪切板",
                     "只上传 APP 信息到服务器",
                     "只上传 APP 图标到服务器",
                     "都上传到服务器",
-                    "复制 APP 名称和包名到剪切板",
-                    "导出信息为 ZIP 文件"
                 )
 
                 val selectDialog = MaterialAlertDialogBuilder(this@MainActivity).apply {
@@ -137,38 +139,17 @@ class MainActivity : BaseActivity() {
                             return@setItems
                         }
 
-                        if (index in 0..2) {
+                        if (index in 2..4) {
                             dialog.show(supportFragmentManager, "upload")
                             dialog.setTotal(checkedList.size)
                         }
 
                         when (index) {
                             0 -> {
-                                // 只上传 APP 信息到服务器
-                                viewModel.dispatch(MainAction.SubmitAppInfo(checkedList))
+                                // 导出信息为 ZIP 文件
+                                viewModel.dispatch(MainAction.ShareZip(checkedList))
                             }
                             1 -> {
-                                // 只上传 APP 图标到服务器
-                                val appIconMap = mutableMapOf<String, Bitmap>()
-                                checkedList.forEach {
-                                    if (it.packageName != null && it.icon != null) {
-                                        appIconMap[it.packageName] = it.icon
-                                    }
-                                }
-                                viewModel.dispatch(MainAction.SubmitAppIcon(appIconMap))
-                            }
-                            2 -> {
-                                // 都上传到服务器
-                                dialog.showTitle()
-                                val appIconMap = mutableMapOf<String, Bitmap>()
-                                checkedList.forEach {
-                                    if (it.packageName != null && it.icon != null) {
-                                        appIconMap[it.packageName] = it.icon
-                                    }
-                                }
-                                viewModel.dispatch(MainAction.SubmitAll(checkedList, appIconMap))
-                            }
-                            3 -> {
                                 // 复制 APP 名称和包名到剪切板
                                 val stringBuilder = StringBuilder().apply {
                                     append("<resources>")
@@ -182,9 +163,30 @@ class MainActivity : BaseActivity() {
                                 }
                                 stringBuilder.toString().copy()
                             }
+                            2 -> {
+                                // 只上传 APP 信息到服务器
+                                viewModel.dispatch(MainAction.SubmitAppInfo(checkedList))
+                            }
+                            3 -> {
+                                // 只上传 APP 图标到服务器
+                                val appIconMap = mutableMapOf<String, Bitmap>()
+                                checkedList.forEach {
+                                    if (it.packageName != null && it.icon != null) {
+                                        appIconMap[it.packageName] = it.icon
+                                    }
+                                }
+                                viewModel.dispatch(MainAction.SubmitAppIcon(appIconMap))
+                            }
                             4 -> {
-                                // 导出信息为 ZIP 文件
-                                viewModel.dispatch(MainAction.ShareZip(checkedList))
+                                // 都上传到服务器
+                                dialog.showTitle()
+                                val appIconMap = mutableMapOf<String, Bitmap>()
+                                checkedList.forEach {
+                                    if (it.packageName != null && it.icon != null) {
+                                        appIconMap[it.packageName] = it.icon
+                                    }
+                                }
+                                viewModel.dispatch(MainAction.SubmitAll(checkedList, appIconMap))
                             }
                         }
                     }

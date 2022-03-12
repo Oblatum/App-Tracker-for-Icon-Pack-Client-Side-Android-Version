@@ -85,6 +85,9 @@ class MainViewModel : BaseViewModel<MainData, MainEvent, MainAction>() {
                 )
             )
         }
+        appInfoList.sortBy {
+            it.appName
+        }
         allAppList = appInfoList.filter { it.activityName != "" }.toMutableList()
         currAppList = appInfoList.filter { it.activityName != "" }.toMutableList()
         emitData {
@@ -194,7 +197,7 @@ class MainViewModel : BaseViewModel<MainData, MainEvent, MainAction>() {
         iconList.toList().asFlow().catch { err ->
             err.printStackTrace()
         }.onEach {
-            val iconFile = it.second.setBackground().toSize(192f, 192f).toFile("${it.first}.jpg")
+            val iconFile = it.second.setBackground().toSize(288f, 288f).toFile("${it.first}.jpg")
             if (iconFile != null) {
                 repo.submitAppIcon(it.first, iconFile).catch { err ->
                     err.printStackTrace()
@@ -234,7 +237,7 @@ class MainViewModel : BaseViewModel<MainData, MainEvent, MainAction>() {
                     iconList.toList().asFlow().catch { err ->
                         err.printStackTrace()
                     }.onEach { icons ->
-                        val iconFile = icons.second.setBackground().toSize(192f, 192f)
+                        val iconFile = icons.second.setBackground().toSize(288f, 288f)
                             .toFile("${icons.first}.jpg")
                         if (iconFile != null) {
                             repo.submitAppIcon(icons.first, iconFile).catch { err ->
@@ -262,11 +265,11 @@ class MainViewModel : BaseViewModel<MainData, MainEvent, MainAction>() {
     private fun saveIcon(icon: Bitmap?, appName: String?) {
         viewModelScope.launch {
             flow {
-                emit(icon?.toFile("${appName}.jpg"))
+                emit(icon?.toFile("${appName}.png", format = Bitmap.CompressFormat.PNG))
             }.flowOn(Dispatchers.IO).collect {
                 val contentValue = MediaStoreUtils.createContentValues(
-                    displayName = "${appName}.jpg",
-                    mimeType = "image/jpeg",
+                    displayName = "${appName}.png",
+                    mimeType = "image/png",
                     relativePath = "${Environment.DIRECTORY_PICTURES}/app-track"
                 )
                 MediaStoreUtils.insertBitmap(BitmapFactory.decodeFile(it?.path), contentValue)

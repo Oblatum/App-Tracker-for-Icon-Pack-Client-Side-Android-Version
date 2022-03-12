@@ -28,5 +28,13 @@ class AboutActivity:AppCompatActivity() {
             }
             startActivity(intent)
         }
+
+        findViewById<Button>(R.id.qq).setOnClickListener {
+            val intent = Intent().apply {
+                action = Intent.ACTION_VIEW
+                data = Uri.parse("https://jq.qq.com/?_wv=1027&k=PgAKBiv9");
+            }
+            startActivity(intent)
+        }
     }
 }
