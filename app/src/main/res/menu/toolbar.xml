@@ -36,6 +36,11 @@
         android:title="显示所有"/>
 
     <item
+        android:id="@+id/none_activity"
+        app:showAsAction="never"
+        android:title="显示/隐藏空启动项应用"/>
+
+    <item
         android:id="@+id/about"
         app:showAsAction="never"
         android:title="关于"/>

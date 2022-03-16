@@ -30,6 +30,7 @@ class MainViewModel : BaseViewModel<MainData, MainEvent, MainAction>() {
     private var currProgress = 0
     private var allAppList: MutableList<AppInfo>? = null
     private var currAppList: MutableList<AppInfo>? = null
+    private var showNoneActivityNameApp = false
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
@@ -61,6 +62,10 @@ class MainViewModel : BaseViewModel<MainData, MainEvent, MainAction>() {
             }
             is MainAction.SaveIcon -> saveIcon(action.icon, action.appName)
             is MainAction.ShareZip -> action.infoList?.let { shareZip(it) }
+            MainAction.SwitchToShowNoneActivityNameApp ->{
+                showNoneActivityNameApp = !showNoneActivityNameApp
+                filterActivityName()
+            }
         }
     }
 
@@ -88,8 +93,8 @@ class MainViewModel : BaseViewModel<MainData, MainEvent, MainAction>() {
         appInfoList.sortBy {
             it.appName
         }
-        allAppList = appInfoList.filter { it.activityName != "" }.toMutableList()
-        currAppList = appInfoList.filter { it.activityName != "" }.toMutableList()
+        allAppList = appInfoList.toMutableList()
+        currAppList = appInfoList.toMutableList()
         emitData {
             copy(
                 appInfoList = BaseLoad.Success(appInfoList.filter { it.activityName != "" })
@@ -143,33 +148,30 @@ class MainViewModel : BaseViewModel<MainData, MainEvent, MainAction>() {
                 allAppList?.let {
                     val newList = it.filter { data -> data.isSystem == false }
                     currAppList = newList.toMutableList()
-                    emitData {
-                        copy(
-                            appInfoList = BaseLoad.Success(newList.toMutableList())
-                        )
-                    }
                 }
             }
             FilterAppType.System -> {
                 allAppList?.let {
                     val newList = it.filter { data -> data.isSystem == true }
                     currAppList = newList.toMutableList()
-                    emitData {
-                        copy(
-                            appInfoList = BaseLoad.Success(newList.toMutableList())
-                        )
-                    }
                 }
             }
             FilterAppType.All -> {
                 allAppList?.let {
                     currAppList = it.toMutableList()
-                    emitData {
-                        copy(
-                            appInfoList = BaseLoad.Success(it.toMutableList())
-                        )
-                    }
                 }
+            }
+        }
+        filterActivityName()
+    }
+
+    private fun filterActivityName() {
+        currAppList?.let {
+            val newList = it.filter { data -> (data.activityName == "") == showNoneActivityNameApp }
+            emitData {
+                copy(
+                    appInfoList = BaseLoad.Success(newList.toMutableList())
+                )
             }
         }
     }

@@ -193,7 +193,7 @@ class MainActivity : BaseActivity() {
                     submitAll.setOnClickListener {
                         @Suppress("UNCHECKED_CAST")
                         val checkedList =
-                            (binding.appList.models as List<AppInfo>).filter { it.isCheck }
+                            (binding.appList.models as List<AppInfo>).filter { it.isCheck && it.activityName != "" }
                         if (checkedList.isEmpty()) {
                             return@setOnClickListener
                         }
@@ -292,6 +292,7 @@ class MainActivity : BaseActivity() {
             R.id.only_system_app -> viewModel.dispatch(MainAction.FilterApp(FilterAppType.System))
             R.id.all_app -> viewModel.dispatch(MainAction.FilterApp(FilterAppType.All))
             R.id.about -> startActivity(Intent(this, AboutActivity::class.java))
+            R.id.none_activity -> viewModel.dispatch(MainAction.SwitchToShowNoneActivityNameApp)
         }
         return super.onOptionsItemSelected(item)
     }

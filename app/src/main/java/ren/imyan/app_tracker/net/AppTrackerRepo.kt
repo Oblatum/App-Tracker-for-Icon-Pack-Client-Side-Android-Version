@@ -19,18 +19,22 @@ class AppTrackerRepo {
 
     suspend fun submitAppInfo(info: AppInfo) =
         flow {
+            var signature = "app-tracker"
+            if(info.activityName == ""){
+                signature = "builtin"
+            }
             val appInfo = SubmitAppRequest(
                 activityName = info.activityName,
                 appName = info.appName,
                 packageName = info.packageName,
-                signature = "app-tracker"
+                signature = signature
             )
             emit(api.submitAppInfo(appInfo))
         }.flowOn(Dispatchers.IO)
 
-    suspend fun submitAppIcon(packageName:String,icon: File) =
-        flow{
+    suspend fun submitAppIcon(packageName: String, icon: File) =
+        flow {
             val iconFile = icon.asRequestBody("image/jpeg".toMediaTypeOrNull());
-            emit(api.submitAppIcon(packageName,iconFile))
+            emit(api.submitAppIcon(packageName, iconFile))
         }.flowOn(Dispatchers.IO)
 }

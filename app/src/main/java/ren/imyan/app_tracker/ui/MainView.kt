@@ -31,4 +31,5 @@ sealed class MainAction : UiAction {
     data class Search(val type: String) : MainAction()
     data class SaveIcon(val icon: Bitmap?, val appName: String?) : MainAction()
     data class ShareZip(val infoList: List<AppInfo>? = null) : MainAction()
+    object SwitchToShowNoneActivityNameApp : MainAction()
 }
