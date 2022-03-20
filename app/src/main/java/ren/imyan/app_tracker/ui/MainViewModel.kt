@@ -199,7 +199,7 @@ class MainViewModel : BaseViewModel<MainData, MainEvent, MainAction>() {
         iconList.toList().asFlow().catch { err ->
             err.printStackTrace()
         }.onEach {
-            val iconFile = it.second.setBackground().toSize(288f, 288f).toFile("${it.first}.jpg")
+            val iconFile = it.second.setBackground().toSize(288f, 288f).toFile("${it.first}.png", format = Bitmap.CompressFormat.PNG)
             if (iconFile != null) {
                 repo.submitAppIcon(it.first, iconFile).catch { err ->
                     err.printStackTrace()
@@ -240,7 +240,7 @@ class MainViewModel : BaseViewModel<MainData, MainEvent, MainAction>() {
                         err.printStackTrace()
                     }.onEach { icons ->
                         val iconFile = icons.second.setBackground().toSize(288f, 288f)
-                            .toFile("${icons.first}.jpg")
+                            .toFile("${icons.first}.png", format = Bitmap.CompressFormat.PNG)
                         if (iconFile != null) {
                             repo.submitAppIcon(icons.first, iconFile).catch { err ->
                                 err.printStackTrace()

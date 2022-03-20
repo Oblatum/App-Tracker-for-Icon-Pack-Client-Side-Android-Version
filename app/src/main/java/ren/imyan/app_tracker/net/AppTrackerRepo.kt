@@ -34,7 +34,7 @@ class AppTrackerRepo {
 
     suspend fun submitAppIcon(packageName: String, icon: File) =
         flow {
-            val iconFile = icon.asRequestBody("image/jpeg".toMediaTypeOrNull());
+            val iconFile = icon.asRequestBody("image/png".toMediaTypeOrNull());
             emit(api.submitAppIcon(packageName, iconFile))
         }.flowOn(Dispatchers.IO)
 }
