@@ -12,8 +12,8 @@ android {
         applicationId "ren.imyan.app_tracker"
         minSdk 21
         targetSdk 31
-        versionCode 6
-        versionName "0.0.6"
+        versionCode 7
+        versionName "0.0.7"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
