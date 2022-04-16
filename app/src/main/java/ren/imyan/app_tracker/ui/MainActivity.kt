@@ -10,8 +10,10 @@ import android.graphics.Bitmap
 import android.graphics.Color
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.viewModels
+import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isGone
 import androidx.core.view.updatePadding
 import androidx.core.widget.doOnTextChanged
@@ -128,7 +130,8 @@ class MainActivity : BaseActivity() {
                     "只上传 APP 信息到服务器",
                     "只上传 APP 图标到服务器",
                 )
-                val submitDialogBinding = DialogSubmitBinding.inflate(this@MainActivity.layoutInflater)
+                val submitDialogBinding =
+                    DialogSubmitBinding.inflate(this@MainActivity.layoutInflater)
 
                 val selectDialog = MaterialAlertDialogBuilder(this@MainActivity).apply {
                     setView(submitDialogBinding.root)
@@ -186,8 +189,21 @@ class MainActivity : BaseActivity() {
                         if (checkedList.isEmpty()) {
                             return@setOnClickListener
                         }
-                        // 导出信息为 ZIP 文件
-                        viewModel.dispatch(MainAction.ShareZip(checkedList))
+                        val edit = EditText(this@MainActivity)
+                        val dialog = MaterialAlertDialogBuilder(this@MainActivity).apply {
+                            setTitle("请输入分享文件前缀,不需要请留空")
+                            setView(edit)
+                            setPositiveButton("确认") { _, _ ->
+                                // 导出信息为 ZIP 文件
+                                viewModel.dispatch(
+                                    MainAction.ShareZip(
+                                        checkedList,
+                                        edit.text.toString()
+                                    )
+                                )
+                            }
+                        }
+                        dialog.show()
                         selectDialog.dismiss()
                     }
                     submitAll.setOnClickListener {
