@@ -13,9 +13,11 @@ import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
+import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import org.threeten.bp.LocalDateTime
@@ -183,6 +185,7 @@ class MainViewModel : BaseViewModel<MainData, MainEvent, MainAction>() {
 
     private fun submitAppInfo(infoList: List<AppInfo>) {
         infoList.asFlow().onEach {
+            delay(200)
             repo.submitAppInfo(it).catch {
                 emitEvent {
                     MainEvent.UploadFail
@@ -207,6 +210,7 @@ class MainViewModel : BaseViewModel<MainData, MainEvent, MainAction>() {
             val iconFile = it.second.setBackground().toSize(288f, 288f)
                 .toFile("${it.first}.png", format = Bitmap.CompressFormat.PNG)
             if (iconFile != null) {
+                delay(200)
                 repo.submitAppIcon(it.first, iconFile).catch { err ->
                     err.printStackTrace()
                     emitEvent {
@@ -228,6 +232,7 @@ class MainViewModel : BaseViewModel<MainData, MainEvent, MainAction>() {
 
     private fun submitAll(infoList: List<AppInfo>, iconList: Map<String, Bitmap>) {
         infoList.asFlow().onEach {
+            delay(200)
             repo.submitAppInfo(it).catch {
                 emitEvent {
                     MainEvent.UploadFail
@@ -248,6 +253,7 @@ class MainViewModel : BaseViewModel<MainData, MainEvent, MainAction>() {
                         val iconFile = icons.second.setBackground().toSize(288f, 288f)
                             .toFile("${icons.first}.png", format = Bitmap.CompressFormat.PNG)
                         if (iconFile != null) {
+                            delay(200)
                             repo.submitAppIcon(icons.first, iconFile).catch { err ->
                                 err.printStackTrace()
                                 emitEvent {
