@@ -2,6 +2,7 @@ package ren.imyan.app_tracker.ui
 
 import ando.file.core.*
 import android.annotation.SuppressLint
+import android.content.ComponentName
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
@@ -21,7 +22,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import org.threeten.bp.LocalDateTime
+import org.xmlpull.v1.XmlPullParser
 import ren.imyan.app_tracker.FilterAppType
+import ren.imyan.app_tracker.R
 import ren.imyan.app_tracker.base.BaseLoad
 import ren.imyan.app_tracker.base.BaseViewModel
 import ren.imyan.app_tracker.common.ktx.*
@@ -38,6 +41,9 @@ class MainViewModel : BaseViewModel<MainData, MainEvent, MainAction>() {
     private var allAppList: MutableList<AppInfo>? = null
     private var currAppList: MutableList<AppInfo>? = null
     private var showNoneActivityNameApp = false
+
+    private val EMPTY_ICON_ID = IntArray(0)
+    private val EMPTY_COMPONENT = ComponentName("", "")
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
@@ -100,12 +106,64 @@ class MainViewModel : BaseViewModel<MainData, MainEvent, MainAction>() {
         appInfoList.sortBy {
             it.appName
         }
-        allAppList = appInfoList.toMutableList()
-        currAppList = appInfoList.toMutableList()
+        val filterList = filterFromXml()
+        val tmp = appInfoList.filter { !filterList.contains(it.packageName) }
+
+        allAppList = tmp.toMutableList()
+        currAppList = tmp.toMutableList()
         emitData {
             copy(
-                appInfoList = BaseLoad.Success(appInfoList.filter { it.activityName != "" })
+                appInfoList = BaseLoad.Success(tmp.filter { it.activityName != "" })
             )
+        }
+    }
+
+    private fun filterFromXml(): ArrayList<String> {
+        val filterPackageList = ArrayList<String>()
+        val xml = get<Context>().resources.getXml(R.xml.appfilter)
+        var eventType = xml.eventType
+
+        while (eventType != XmlPullParser.END_DOCUMENT) {
+            val tagName = xml.name
+            when (eventType) {
+                XmlPullParser.START_TAG -> {
+                    if ("item" == tagName) {
+                        val component =
+                            parseComponent(xml.getAttributeValue(null, "component") ?: "")
+                        filterPackageList.add(component.packageName)
+                    }
+                }
+            }
+            eventType = xml.next()
+        }
+        return filterPackageList
+    }
+
+    private fun parseComponent(info: String): ComponentName {
+        try {
+            if (!info.startsWith(Companion.KEY_COMPONENT_INFO)) {
+                return EMPTY_COMPONENT
+            }
+            val start = info.indexOf("{") + 1
+            val end = info.indexOf("}")
+            if (start > end || start == end) {
+                return EMPTY_COMPONENT
+            }
+            val infoContent = info.substring(start, end)
+            val split = infoContent.split("/")
+            if (split.size < 2) {
+                return EMPTY_COMPONENT
+            }
+            val pkg = split[0]
+            val cls = split[1]
+            val fullName = if (cls[0] == '.') {
+                pkg + cls
+            } else {
+                cls
+            }
+            return ComponentName(pkg, fullName)
+        } catch (e: Throwable) {
+            return EMPTY_COMPONENT
         }
     }
 
@@ -368,11 +426,16 @@ class MainViewModel : BaseViewModel<MainData, MainEvent, MainAction>() {
                 "${get<Context>().cacheDir.path}/${iconPackName}_ICON_${time}.zip"
             )
 
-            val uri = FileUri.getUriByFile(File("${get<Context>().cacheDir.path}/${iconPackName}_ICON_${time}.zip"))
+            val uri =
+                FileUri.getUriByFile(File("${get<Context>().cacheDir.path}/${iconPackName}_ICON_${time}.zip"))
 
             uri?.let {
                 FileOpener.openShare(get(), uri, "${iconPackName}_ICON_${time}.zip")
             }
         }.launchIn(viewModelScope)
+    }
+
+    companion object {
+        private const val KEY_COMPONENT_INFO = "ComponentInfo"
     }
 }
