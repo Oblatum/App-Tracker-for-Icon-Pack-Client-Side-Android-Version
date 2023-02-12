@@ -1,17 +1,17 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
-    id 'com.google.devtools.ksp'
     id 'kotlin-parcelize'
+    id 'org.jetbrains.kotlin.plugin.serialization' version '1.8.10'
 }
 
 android {
-    compileSdk 31
+    compileSdk 33
 
     defaultConfig {
         applicationId "ren.imyan.app_tracker"
         minSdk 21
-        targetSdk 31
+        targetSdk 33
         versionCode 10
         versionName "0.0.9.1"
 
@@ -42,33 +42,31 @@ dependencies {
 
 //    implementation files('libs/iconCore-release.aar')
 
-    implementation 'androidx.core:core-ktx:1.7.0'
-    implementation 'androidx.appcompat:appcompat:1.4.1'
-    implementation 'com.google.android.material:material:1.5.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.3'
+    implementation 'androidx.core:core-ktx:1.9.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.8.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
 
     // 官方 ktx 扩展
-    implementation 'androidx.core:core-ktx:1.7.0'
-    implementation 'androidx.appcompat:appcompat:1.4.1'
-    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.1"
-    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.4.1"
-    implementation "androidx.fragment:fragment-ktx:1.4.1"
-    implementation "androidx.activity:activity-ktx:1.4.0"
+    implementation 'androidx.core:core-ktx:1.9.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.1"
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.5.1"
+    implementation "androidx.fragment:fragment-ktx:1.5.5"
+    implementation "androidx.activity:activity-ktx:1.6.1"
+
+    // Ktor Client
+    implementation "io.ktor:ktor-client-core:2.2.3"
+    implementation "io.ktor:ktor-serialization-kotlinx-json:2.2.3"
+    implementation "io.ktor:ktor-client-content-negotiation:2.2.3"
+    implementation "io.ktor:ktor-client-android:2.2.3"
+    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1'
 
     // Koin 依赖注入 https://insert-koin.io
     implementation "io.insert-koin:koin-android:3.1.3"
 
-    // Retrofit 网络请求 https://github.com/square/retrofit
-    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
-    implementation 'com.squareup.retrofit2:converter-moshi:2.9.0'
-    implementation "com.squareup.okhttp3:logging-interceptor:4.9.2"
-
-    // Moshi JSON 解析 https://github.com/square/moshi
-    implementation "com.squareup.moshi:moshi:1.12.0"
-    ksp "dev.zacsweers.moshix:moshi-ksp:0.14.1"
-
     // Coroutine 协程 https://developer.android.google.cn/kotlin/coroutines
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.2"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4"
 
     // Coil 图片加载 https://github.com/coil-kt/coil
     implementation "io.coil-kt:coil:1.4.0"

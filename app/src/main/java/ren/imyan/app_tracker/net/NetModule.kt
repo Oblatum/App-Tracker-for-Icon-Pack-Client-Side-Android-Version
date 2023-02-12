@@ -1,11 +1,13 @@
 package ren.imyan.app_tracker.net
 
-import okhttp3.ConnectionPool
-import okhttp3.OkHttpClient
+import io.ktor.client.*
+import io.ktor.client.engine.android.*
+import io.ktor.client.plugins.*
+import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.request.*
+import io.ktor.http.*
+import io.ktor.serialization.kotlinx.json.*
 import org.koin.dsl.module
-import retrofit2.Retrofit
-import retrofit2.converter.moshi.MoshiConverterFactory
-import java.util.concurrent.TimeUnit
 
 // 超时时间
 private const val DEFAULT_TIMEOUT = 15L
@@ -14,29 +16,25 @@ private const val DEFAULT_TIMEOUT = 15L
 private const val MAX_LIMIT_CONNECTIONS = 10
 
 val netModule = module {
-    single {
-        Retrofit.Builder()
-            .client(get())
-            .baseUrl("https://apptracker-api.cn2.tiers.top/api/")
-//            .baseUrl("https://test.k2t3k.tk/api/")
-            .addConverterFactory(MoshiConverterFactory.create())
-            .build()
-    }
 
-    single {
-        OkHttpClient.Builder()
-            .addInterceptor(LogInterceptor())
-            .connectTimeout(DEFAULT_TIMEOUT, TimeUnit.SECONDS)
-            .writeTimeout(DEFAULT_TIMEOUT, TimeUnit.SECONDS)
-            .readTimeout(DEFAULT_TIMEOUT, TimeUnit.SECONDS)
-            .connectionPool(
-                ConnectionPool(
-                    MAX_LIMIT_CONNECTIONS,
-                    DEFAULT_TIMEOUT,
-                    TimeUnit.SECONDS
-                )
-            )
-            .build()
+    factory {
+        HttpClient(Android) {
+            defaultRequest {
+                url {
+                    protocol = URLProtocol.HTTP
+//                    host = "apptracker-api.cn2.tiers.top/api"
+                    host = "apptracker-dev.cn2.tiers.top"
+                }
+
+                header("Content-Type", "application/json")
+            }
+
+            install(ContentNegotiation) {
+                json()
+            }
+
+            install(NetLoggingPlugin)
+        }
     }
 
     single {
