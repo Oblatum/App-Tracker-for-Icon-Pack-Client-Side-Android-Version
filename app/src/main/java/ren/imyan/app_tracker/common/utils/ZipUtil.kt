@@ -1,11 +1,16 @@
 package ren.imyan.app_tracker.common.utils
 
-import okhttp3.internal.closeQuietly
 import java.io.*
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 import java.util.zip.ZipOutputStream
 
+fun Closeable?.closeQuietly() {
+    try {
+        this?.close()
+    } catch (e: Throwable) {
+    }
+}
 
 object ZipUtil {
 

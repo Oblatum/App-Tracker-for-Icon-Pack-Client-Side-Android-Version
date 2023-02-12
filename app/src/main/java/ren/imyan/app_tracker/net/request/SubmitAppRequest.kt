@@ -1,20 +1,16 @@
 package ren.imyan.app_tracker.net.request
 import androidx.annotation.Keep
 
-import com.squareup.moshi.JsonClass
-
-import com.squareup.moshi.Json
+import kotlinx.serialization.SerialName
 
 
 @Keep
-@JsonClass(generateAdapter = true)
+@kotlinx.serialization.Serializable
 data class SubmitAppRequest(
-    @Json(name = "activityName")
+    @SerialName("activityName")
     val activityName: String?,
-    @Json(name = "appName")
+    @SerialName("appName")
     val appName: String?,
-    @Json(name = "packageName")
+    @SerialName("packageName")
     val packageName: String?,
-    @Json(name = "signature")
-    val signature: String?
 )
